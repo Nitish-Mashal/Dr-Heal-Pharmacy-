@@ -1,0 +1,427 @@
+<section class="container my-4">
+  <div class="position-relative mb-3">
+    <h4 class="mb-0 text-center">All Products</h4>
+    <a href="/all-products"
+      class="position-absolute top-50 end-0 translate-middle-y text-decoration-none text-black small">
+      View All
+    </a>
+  </div>
+
+  {% set products = frappe.db.sql("""
+  SELECT
+  wi.item_name,
+  wi.item_code,
+  wi.route,
+  wi.website_image AS image,
+  (
+  SELECT ip.price_list_rate
+  FROM `tabItem Price` ip
+  WHERE ip.item_code = wi.item_code
+  LIMIT 1
+  ) AS price
+  FROM `tabWebsite Item` wi
+  WHERE wi.published = 1
+  """, as_dict=True) %}
+
+  <!-- Wrapper -->
+  <div class="product-wrapper">
+
+    <!-- Left Arrow -->
+    <button class="product-btn prev">‹</button>
+
+    <!-- Scroll Container -->
+    <div class="product-scroll">
+
+      {% for product in products %}
+      <div class="product-card">
+
+        <div class="card border-0 shadow-sm p-3">
+
+          <a href="/{{ product.route }}" class="text-decoration-none text-dark h-100 d-flex flex-column">
+
+          <!-- Image -->
+          <div class="product-img-wrapper mb-3">
+            <img src="{{ product.image if product.image else '/files/placeholder-medicine.jpeg' }}"
+                class="product-img"
+                alt="{{ product.item_name }}">
+          </div>
+
+            <!-- Product Name -->
+            <div class="product-title">
+              {{ product.item_name }}
+            </div>
+
+            <!-- Price + Cart Row -->
+            <div class="product-bottom">
+
+              {% if product.price %}
+              <div class="product-price">
+                ₹ {{ product.price }}
+              </div>
+              {% else %}
+              <div class="text-muted small">
+                N/A
+              </div>
+              {% endif %}
+
+              <button
+                class="add-to-cart-btn"
+                data-item-code="{{ product.item_code }}"
+                type="button"
+              >
+                <i class="bi bi-cart"></i>
+              </button>
+
+            </div>
+
+          </a>
+
+        </div>
+
+      </div>
+      {% endfor %}
+
+    </div>
+
+    <!-- Right Arrow -->
+    <button class="product-btn next">›</button>
+
+  </div>
+</section>
+
+<style>
+.product-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.product-scroll {
+  display: flex;
+  gap: 16px;
+  overflow-x: hidden;
+  padding: 10px 50px;
+  scroll-behavior: smooth;
+  width: 100%;
+}
+
+.product-card {
+  flex: 0 0 auto;
+  width: 180px;
+}
+
+.card {
+  width: 100%;
+  height: 270px;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: 0.3s ease;
+  background: #fff;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+.card a {
+  height: 100%;
+}
+
+/* IMAGE */
+.product-img-wrapper {
+  height: 130px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* TITLE */
+.product-title {
+  min-height: 36px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+  margin-bottom: 10px;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: #222;
+}
+
+/* BOTTOM SECTION */
+.product-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  gap: 10px;
+}
+
+/* PRICE */
+.product-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: #000;
+  margin: 0;
+  text-align: left;
+}
+
+/* CART BUTTON */
+.add-to-cart-btn {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+
+  border-radius: 50%;
+  border: none;
+
+  background: #3179C4;
+  color: #fff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  padding: 0;
+}
+
+.add-to-cart-btn:hover {
+  background: #333;
+  transform: scale(1.05);
+}
+
+.add-to-cart-btn i {
+  font-size: 15px;
+  color: #fff !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* ARROWS */
+.product-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+
+  border: none;
+
+  width: 42px;
+  height: 42px;
+
+  border-radius: 50%;
+
+  font-size: 26px;
+  line-height: 1;
+
+  cursor: pointer;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: 0.3s ease;
+}
+
+.product-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.product-btn.prev {
+  left: 0;
+}
+
+.product-btn.next {
+  right: 0;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+
+  .product-scroll {
+    padding: 10px 35px;
+    gap: 12px;
+  }
+
+  .product-card {
+    width: 150px;
+  }
+
+  .card {
+    height: 245px;
+  }
+
+  .product-img-wrapper {
+    height: 110px;
+  }
+
+  .product-title {
+    font-size: 12px;
+  }
+
+  .product-price {
+    font-size: 16px;
+  }
+
+  .add-to-cart-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
+
+  .product-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 22px;
+  }
+
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const container = document.querySelector(".product-scroll");
+  const prevBtn = document.querySelector(".product-btn.prev");
+  const nextBtn = document.querySelector(".product-btn.next");
+
+  const CARD_WIDTH = 196;
+
+  let autoScrollInterval;
+  let isPaused = false;
+
+  // START AUTO SLIDE
+  function startAutoScroll() {
+
+    stopAutoScroll();
+
+    autoScrollInterval = setInterval(() => {
+
+      if (!isPaused) {
+
+        container.scrollLeft += 1;
+
+        // reset to beginning
+        if (
+          container.scrollLeft >=
+          (container.scrollWidth - container.clientWidth)
+        ) {
+          container.scrollLeft = 0;
+        }
+
+      }
+
+    }, 20);
+
+  }
+
+  // STOP AUTO SLIDE
+  function stopAutoScroll() {
+    clearInterval(autoScrollInterval);
+  }
+
+  startAutoScroll();
+
+  // HOVER PAUSE
+  container.addEventListener("mouseenter", () => {
+    isPaused = true;
+  });
+
+  container.addEventListener("mouseleave", () => {
+    isPaused = false;
+  });
+
+  // MANUAL BUTTON SCROLL
+  function manualScroll(direction) {
+
+    // pause auto sliding temporarily
+    isPaused = true;
+
+    container.scrollBy({
+      left: direction * CARD_WIDTH,
+      behavior: "smooth"
+    });
+
+    // resume after smooth scroll
+    setTimeout(() => {
+      isPaused = false;
+    }, 800);
+
+  }
+
+  nextBtn.addEventListener("click", () => {
+    manualScroll(1);
+  });
+
+  prevBtn.addEventListener("click", () => {
+    manualScroll(-1);
+  });
+
+  // ADD TO CART
+  document.querySelectorAll(".add-to-cart-btn").forEach(button => {
+
+    button.addEventListener("click", function (e) {
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const itemCode = this.dataset.itemCode;
+      const btn = this;
+
+      frappe.call({
+        method: "pharmacy.api.cart.add_to_cart",
+        args: {
+          item_code: itemCode,
+          qty: 1
+        },
+        callback: function (r) {
+
+          if (r.message) {
+
+            // update navbar count
+            const cartCount = r.message.cart_count;
+
+            const cartBadge = document.getElementById("cartBadgeTop");
+
+            if (cartBadge) {
+              cartBadge.innerText = cartCount;
+            }
+
+            // success icon
+            btn.innerHTML = '<i class="bi bi-check-lg"></i>';
+
+            setTimeout(() => {
+              btn.innerHTML =
+                '<i class="bi bi-cart"></i>';
+            }, 1200);
+
+          }
+        }
+      });
+
+    });
+
+  });
+
+});
+</script>

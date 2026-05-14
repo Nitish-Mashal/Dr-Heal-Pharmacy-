@@ -5,6 +5,10 @@ app_description = "Pharmacy app for the online medicine shopping"
 app_email = "nitish.m@quantumberg.com"
 app_license = "mit"
 
+app_include_js = [
+	"/assets/pharmacy/js/product_ui/list.js"
+]
+
 # Apps
 # ------------------
 

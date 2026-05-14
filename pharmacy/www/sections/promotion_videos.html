@@ -1,0 +1,231 @@
+{% if promotion_videos and promotion_videos|length > 0 %}
+<div class="container mt-3 mb-4">
+
+  <h4 class="text-center fw-semibold mb-3">
+    Promotional Videos
+  </h4>
+
+  <!-- Wrapper -->
+  <div class="promo-wrapper">
+
+    <!-- Left Arrow -->
+    <button class="promo-btn prev">‹</button>
+
+    <!-- Video Scroll -->
+    <div class="promo-video-scroll">
+      {% for video in promotion_videos %}
+        {% if video.upload_videos %}
+        <div class="promo-video-card hover-play">
+          <video
+            class="promo-video"
+            muted
+            loop
+            playsinline
+            preload="metadata">
+            <source src="{{ frappe.utils.get_url(video.upload_videos) }}" type="video/mp4">
+          </video>
+          <div class="play-overlay">▶</div>
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Right Arrow -->
+    <button class="promo-btn next">›</button>
+
+  </div>
+
+</div>
+{% endif %}
+
+
+<style>
+/* Wrapper */
+.promo-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Scroll container */
+.promo-video-scroll {
+  display: flex;
+  gap: 16px;
+  overflow-x: hidden;
+  padding: 10px 40px; /* space for arrows */
+  scroll-behavior: smooth;
+}
+
+/* Arrow buttons */
+.promo-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.1);
+  color: #fff;
+  border: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  font-size: 26px;
+  cursor: pointer;
+  z-index: 5;
+}
+
+.promo-btn:hover {
+  background: rgba(0,0,0,0.1);
+}
+
+.promo-btn.prev {
+  left: 0;
+}
+
+.promo-btn.next {
+  right: 0;
+}
+
+/* Video card */
+.promo-video-card {
+  flex: 0 0 auto;
+  width: 150px;
+  aspect-ratio: 9 / 16;
+  background: #000;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+}
+
+/* Video */
+.promo-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Play overlay */
+.play-overlay {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.hover-play:hover .play-overlay {
+  opacity: 0;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const container = document.querySelector(".promo-video-scroll");
+  const prevBtn = document.querySelector(".promo-btn.prev");
+  const nextBtn = document.querySelector(".promo-btn.next");
+
+  const CARD_WIDTH = 166; // card width + gap
+  let autoScrollInterval;
+  let isPaused = false;
+
+  /* ================= AUTO SLIDE ================= */
+
+  function startAutoScroll() {
+    stopAutoScroll();
+    autoScrollInterval = setInterval(() => {
+      if (!isPaused) {
+        container.scrollLeft += CARD_WIDTH;
+
+        if (
+          container.scrollLeft + container.clientWidth >=
+          container.scrollWidth
+        ) {
+          container.scrollLeft = 0;
+        }
+      }
+    }, 3000);
+  }
+
+  function stopAutoScroll() {
+    clearInterval(autoScrollInterval);
+  }
+
+  startAutoScroll();
+
+  /* ================= ARROWS ================= */
+
+  function pauseAndResume() {
+    isPaused = true;
+    setTimeout(() => {
+      isPaused = false;
+    }, 3000);
+  }
+
+  nextBtn.addEventListener("click", () => {
+    container.scrollBy({ left: CARD_WIDTH, behavior: "smooth" });
+    pauseAndResume();
+  });
+
+  prevBtn.addEventListener("click", () => {
+    container.scrollBy({ left: -CARD_WIDTH, behavior: "smooth" });
+    pauseAndResume();
+  });
+
+  /* ================= VIDEO LOGIC ================= */
+
+  document.querySelectorAll(".hover-play").forEach(card => {
+    const video = card.querySelector("video");
+    const overlay = card.querySelector(".play-overlay");
+
+    // Hover preview
+    card.addEventListener("mouseenter", () => {
+      if (!video.dataset.clicked) {
+        video.muted = true;
+        video.currentTime = 0;
+        video.play();
+      }
+    });
+
+    card.addEventListener("mouseleave", () => {
+      if (!video.dataset.clicked) {
+        video.pause();
+        video.currentTime = 0;
+      }
+    });
+
+    // Click play with sound
+    card.addEventListener("click", () => {
+      if (!video.dataset.clicked) {
+        isPaused = true;
+        video.dataset.clicked = "true";
+        video.muted = false;
+        video.play();
+        overlay.style.opacity = "0";
+      } else {
+        video.pause();
+        video.currentTime = 0;
+        video.dataset.clicked = "";
+        overlay.style.opacity = "1";
+        isPaused = false;
+      }
+    });
+
+    // Resume sliding when video ends
+    video.addEventListener("ended", () => {
+      video.dataset.clicked = "";
+      overlay.style.opacity = "1";
+      isPaused = false;
+    });
+  });
+
+});
+</script>

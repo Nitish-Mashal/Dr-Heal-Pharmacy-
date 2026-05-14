@@ -1,0 +1,629 @@
+<section class="container my-5" id="products-by-tag-section">
+
+  <!-- Heading Row -->
+  <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap">
+
+    <div></div>
+
+    <!-- TAG BUTTONS -->
+    <div
+      class="d-flex justify-content-center gap-2 flex-wrap"
+      id="tag-buttons">
+    </div>
+
+    <!-- VIEW ALL -->
+    <a href="/all-products"
+       class="text-decoration-none text-black small ms-2">
+      View All
+    </a>
+
+  </div>
+
+  <!-- PRODUCT WRAPPER -->
+  <div class="product-wrapper">
+
+    <!-- LEFT -->
+    <button class="product-btn prev">‹</button>
+
+    <!-- PRODUCTS -->
+    <div class="product-scroll" id="product-scroll"></div>
+
+    <!-- RIGHT -->
+    <button class="product-btn next">›</button>
+
+  </div>
+
+</section>
+
+<style>
+.product-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.product-scroll {
+  display: flex;
+  gap: 16px;
+  overflow-x: hidden;
+  padding: 10px 50px;
+  scroll-behavior: smooth;
+  width: 100%;
+}
+
+/* CARD */
+.product-card {
+  flex: 0 0 auto;
+  width: 180px;
+}
+
+.card {
+  width: 100%;
+  height: 270px;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: 0.3s ease;
+  background: #fff;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+/* IMAGE */
+.product-img-wrapper {
+  height: 130px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* TITLE */
+.product-title {
+  height: 38px;
+  min-height: 38px;
+  max-height: 38px;
+
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+
+  text-align: center;
+  margin-bottom: 10px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  word-break: break-word;
+
+  color: #222;
+}
+
+/* PRICE + CART */
+.product-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  gap: 10px;
+}
+
+/* PRICE */
+.product-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: #000;
+  margin: 0;
+}
+
+/* CART BUTTON */
+.add-to-cart-btn {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+
+  border-radius: 50%;
+  border: none;
+
+  background: #3179C4;
+  color: #fff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  padding: 0;
+}
+
+.add-to-cart-btn:hover {
+  background: #333;
+  transform: scale(1.05);
+}
+
+.add-to-cart-btn i {
+  font-size: 15px;
+  color: #fff !important;
+  line-height: 1;
+}
+
+/* ARROWS */
+.product-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+
+  border: none;
+
+  width: 42px;
+  height: 42px;
+
+  border-radius: 50%;
+
+  font-size: 26px;
+  cursor: pointer;
+  z-index: 5;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: 0.3s ease;
+}
+
+.product-btn:hover {
+  background: rgba(0,0,0,0.7);
+}
+
+.product-btn.prev {
+  left: 0;
+}
+
+.product-btn.next {
+  right: 0;
+}
+
+/* TAG BUTTON SECTION */
+#products-by-tag-section .d-flex.align-items-center {
+  gap: 10px;
+}
+
+#tag-buttons {
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+#products-by-tag-section a {
+  white-space: nowrap;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+
+  .product-scroll {
+    padding: 10px 35px;
+    gap: 12px;
+  }
+
+  .product-card {
+    width: 150px;
+  }
+
+  .card {
+    height: 245px;
+  }
+
+  .product-img-wrapper {
+    height: 110px;
+  }
+
+  .product-title {
+    font-size: 12px;
+  }
+
+  .product-price {
+    font-size: 16px;
+  }
+
+  .add-to-cart-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
+
+  .product-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 22px;
+  }
+
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const section = document.getElementById(
+    "products-by-tag-section"
+  );
+
+  const productScroll = document.getElementById(
+    "product-scroll"
+  );
+
+  const tagButtons = document.getElementById(
+    "tag-buttons"
+  );
+
+  const prevBtn = document.querySelector(
+    "#products-by-tag-section .product-btn.prev"
+  );
+
+  const nextBtn = document.querySelector(
+    "#products-by-tag-section .product-btn.next"
+  );
+
+  const CARD_WIDTH = 196;
+
+  let autoScrollTimer = null;
+  let isPaused = false;
+
+  /* ===============================
+     AUTO SCROLL
+  =============================== */
+  function startAutoScroll() {
+
+    stopAutoScroll();
+
+    autoScrollTimer = setInterval(() => {
+
+      if (isPaused || !productScroll.children.length) return;
+
+      const maxScroll =
+        productScroll.scrollWidth -
+        productScroll.clientWidth;
+
+      if (productScroll.scrollLeft >= maxScroll - 5) {
+
+        productScroll.scrollTo({
+          left: 0,
+          behavior: "smooth"
+        });
+
+      } else {
+
+        productScroll.scrollBy({
+          left: CARD_WIDTH,
+          behavior: "smooth"
+        });
+
+      }
+
+    }, 3000);
+  }
+
+  function stopAutoScroll() {
+
+    if (autoScrollTimer) {
+      clearInterval(autoScrollTimer);
+    }
+
+  }
+
+  function pauseAutoScroll() {
+
+    isPaused = true;
+
+    setTimeout(() => {
+      isPaused = false;
+    }, 3000);
+
+  }
+
+  /* ===============================
+     HOVER STOP
+  =============================== */
+  productScroll.addEventListener(
+    "mouseenter",
+    () => {
+      isPaused = true;
+    }
+  );
+
+  productScroll.addEventListener(
+    "mouseleave",
+    () => {
+      isPaused = false;
+    }
+  );
+
+  /* ===============================
+     RENDER PRODUCTS
+  =============================== */
+  function renderProducts(products) {
+
+    productScroll.innerHTML = "";
+
+    if (!products || !products.length) {
+
+      productScroll.innerHTML = `
+        <p class="text-muted text-center w-100">
+          No products found
+        </p>
+      `;
+
+      stopAutoScroll();
+      return;
+    }
+
+    products.forEach(item => {
+
+      productScroll.insertAdjacentHTML("beforeend", `
+
+        <div class="product-card">
+
+          <div class="card border-0 shadow-sm p-3">
+
+            <a href="${item.route}"
+               class="text-decoration-none text-dark h-100 d-flex flex-column">
+
+              <!-- IMAGE -->
+              <div class="product-img-wrapper mb-3">
+
+                <img src="${item.image}"
+                     class="product-img"
+                     alt="${item.item_name}">
+
+              </div>
+
+              <!-- TITLE -->
+              <div class="product-title">
+                ${item.item_name}
+              </div>
+
+              <!-- PRICE + CART -->
+              <div class="product-bottom">
+
+                ${
+                  item.standard_rate
+                    ? `
+                      <div class="product-price">
+                        ₹ ${item.standard_rate}
+                      </div>
+                    `
+                    : `
+                      <div class="text-muted small">
+                        N/A
+                      </div>
+                    `
+                }
+
+                <button
+                  class="add-to-cart-btn"
+                  data-item-code="${item.item_code}"
+                  type="button"
+                >
+                  <i class="bi bi-cart"></i>
+                </button>
+
+              </div>
+
+            </a>
+
+          </div>
+
+        </div>
+
+      `);
+
+    });
+
+    /* ===============================
+       ADD TO CART
+    =============================== */
+    document.querySelectorAll(
+      "#products-by-tag-section .add-to-cart-btn"
+    ).forEach(button => {
+
+      button.addEventListener("click", function (e) {
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const itemCode =
+          this.dataset.itemCode;
+
+        const btn = this;
+
+        frappe.call({
+
+          method: "pharmacy.api.cart.add_to_cart",
+
+          args: {
+            item_code: itemCode,
+            qty: 1
+          },
+
+          callback: function (r) {
+
+            if (r.message) {
+
+              // UPDATE NAVBAR COUNT
+              const cartBadge =
+                document.getElementById(
+                  "cartBadgeTop"
+                );
+
+              if (cartBadge) {
+                cartBadge.innerText =
+                  r.message.cart_count || 0;
+              }
+
+              // SUCCESS ICON
+              btn.innerHTML =
+                '<i class="bi bi-check-lg"></i>';
+
+              setTimeout(() => {
+
+                btn.innerHTML =
+                  '<i class="bi bi-cart"></i>';
+
+              }, 1200);
+
+            }
+
+          }
+
+        });
+
+      });
+
+    });
+
+    productScroll.scrollLeft = 0;
+
+    startAutoScroll();
+
+  }
+
+  /* ===============================
+     LOAD PRODUCTS
+  =============================== */
+  function loadProducts(tag) {
+
+    stopAutoScroll();
+
+    frappe.call({
+
+      method:
+        "pharmacy.api.products.get_products_by_tag",
+
+      args: { tag },
+
+      callback: r => {
+
+        renderProducts(r.message || []);
+
+      }
+
+    });
+
+  }
+
+  /* ===============================
+     LOAD TAGS
+  =============================== */
+  frappe.call({
+
+    method:
+      "pharmacy.api.products.get_product_tags",
+
+    callback: r => {
+
+      if (!r.message || !r.message.length) {
+
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+
+      r.message.forEach((t, index) => {
+
+        const btn =
+          document.createElement("button");
+
+        btn.className =
+          `btn btn-sm ${
+            index === 0
+              ? 'btn-dark'
+              : 'btn-outline-dark'
+          }`;
+
+        btn.innerText = t.tag;
+
+        btn.onclick = () => {
+
+          document
+            .querySelectorAll(
+              "#tag-buttons button"
+            )
+            .forEach(b => {
+
+              b.classList.replace(
+                "btn-dark",
+                "btn-outline-dark"
+              );
+
+            });
+
+          btn.classList.replace(
+            "btn-outline-dark",
+            "btn-dark"
+          );
+
+          loadProducts(t.tag);
+
+          pauseAutoScroll();
+
+        };
+
+        tagButtons.appendChild(btn);
+
+        if (index === 0) {
+          loadProducts(t.tag);
+        }
+
+      });
+
+    }
+
+  });
+
+  /* ===============================
+     LEFT RIGHT BUTTONS
+  =============================== */
+  nextBtn.addEventListener("click", () => {
+
+    pauseAutoScroll();
+
+    productScroll.scrollBy({
+      left: CARD_WIDTH,
+      behavior: "smooth"
+    });
+
+  });
+
+  prevBtn.addEventListener("click", () => {
+
+    pauseAutoScroll();
+
+    productScroll.scrollBy({
+      left: -CARD_WIDTH,
+      behavior: "smooth"
+    });
+
+  });
+
+});
+</script>

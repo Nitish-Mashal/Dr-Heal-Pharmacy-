@@ -10,18 +10,13 @@
         background: #f6f8fb;
     }
 
-    /* Grid fix */
-    .row {
-        display: flex;
-        flex-wrap: wrap;
-    }
-
-    .col-lg-4,
-    .col-md-6 {
+    /* Blog Grid Only */
+    #blog-container .col-lg-4,
+    #blog-container .col-md-6 {
         display: flex;
     }
 
-    /* Card */
+    /* Blog Card */
     .blog-card {
         border-radius: 14px;
         overflow: hidden;
@@ -31,6 +26,7 @@
         width: 100%;
         display: flex;
         flex-direction: column;
+        height: 100%;
     }
 
     /* Header */
@@ -41,7 +37,7 @@
         min-height: 190px;
     }
 
-    /* Image */
+    /* Circular Image */
     .blog-img {
         width: 120px;
         height: 120px;
@@ -54,7 +50,7 @@
         background: #fff;
     }
 
-    /* Header text */
+    /* Header Text */
     .blog-header h5 {
         color: #eafffd;
         font-size: 16px;
@@ -83,13 +79,14 @@
         color: #111;
     }
 
-    .blog-body p {
+    .blog-body p,
+    .blog-body div {
         font-size: 14px !important;
         color: #666;
         line-height: 1.6;
     }
 
-    /* Read more */
+    /* Read More */
     .read-more {
         font-size: 13px;
         font-weight: 500;
@@ -109,44 +106,73 @@
         color: #999;
         margin-top: auto;
     }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+        .blog-header {
+            min-height: 170px;
+        }
+
+        .blog-img {
+            width: 90px;
+            height: 90px;
+        }
+
+        .blog-header h5,
+        .blog-header p {
+            max-width: 160px;
+        }
+    }
 </style>
 
-<div class="py-5">
+<div class="container py-5">
     <div class="row g-4" id="blog-container">
         <!-- Cards injected here -->
     </div>
 </div>
 
 <script>
-    fetch("/api/method/pharmacy.api.blogs.get_blogs")
-        .then(res => res.json())
-        .then(res => {
-            const blogs = res.message || [];
-            const container = document.getElementById("blog-container");
+fetch("/api/method/pharmacy.api.blogs.get_blogs")
+    .then(res => res.json())
+    .then(res => {
 
-            blogs.forEach(blog => {
-                const image = blog.thumbnail_image || blog.header_image || "";
+        const blogs = res.message || [];
+        const container = document.getElementById("blog-container");
 
-                const cardHTML = `
-                <div class="col-lg-4 col-md-6 mb-4">
+        blogs.forEach(blog => {
+
+            const image =
+                blog.thumbnail_image ||
+                blog.header_image ||
+                "/files/no-image.png";
+
+            const cardHTML = `
+                <div class="col-lg-4 col-md-6">
                     <div class="blog-card">
+
                         <div class="blog-header">
                             <h5>${blog.description_heading_1_h3 || ""}</h5>
                             <p>${blog.sub_description_heading_1_p || ""}</p>
-                            <img src="${image}" class="blog-img" alt="Blog Image">
+
+                            <img
+                                src="${image}"
+                                class="blog-img"
+                                alt="Blog Image"
+                                onerror="this.src='/files/no-image.png'"
+                            >
                         </div>
 
                         <div class="blog-body">
                             <h5>${blog.description_heading_2 || ""}</h5>
 
-                            <div style="font-size:14px">
+                            <div>
                                 ${blog.description_1 || ""}
                             </div>
 
-                            
-                            <a href="/sections/blogdetails?blog_name=${encodeURIComponent(blog.name)}"
-
-                               class="read-more  fw-semibold">
+                            <a
+                                href="/sections/blogdetails?blog_name=${encodeURIComponent(blog.name)}"
+                                class="read-more fw-semibold"
+                            >
                                 Read More →
                             </a>
                         </div>
@@ -154,24 +180,30 @@
                         <div class="blog-footer">
                             ${formatDate(blog.blog_date)}
                         </div>
+
                     </div>
                 </div>
-                `;
+            `;
 
-                container.insertAdjacentHTML("beforeend", cardHTML);
-            });
-        })
-        .catch(err => console.error("Blog API error:", err));
-
-    function formatDate(dateStr) {
-        if (!dateStr) return "";
-        const date = new Date(dateStr);
-        return date.toLocaleDateString("en-IN", {
-            day: "numeric",
-            month: "long",
-            year: "numeric"
+            container.insertAdjacentHTML("beforeend", cardHTML);
         });
-    }
+
+    })
+    .catch(err => {
+        console.error("Blog API Error:", err);
+    });
+
+function formatDate(dateStr) {
+    if (!dateStr) return "";
+
+    const date = new Date(dateStr);
+
+    return date.toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+    });
+}
 </script>
 
 {% endblock %}

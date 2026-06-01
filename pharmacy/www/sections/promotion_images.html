@@ -29,7 +29,7 @@
 
           <div class="card border rounded-4 shadow-sm position-relative">
             <img src="{{ promo.attach_image }}"
-                 class="img-fluid promotion-img"
+                 class="img-fluid promotion-img "
                  alt="{{ promo.name1 }}">
           </div>
 
@@ -67,9 +67,11 @@
 }
 
 .promotion-img {
-  max-height: 250px;
-  object-fit: cover;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
   border-radius: 8px;
+  display: block;
 }
 
 /* Arrow buttons */
@@ -95,52 +97,137 @@
   text-decoration: none;
   opacity: 0.9;
 }
+
+@media (max-width: 768px) {
+
+  .promotion-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 10px 0 10px 10px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .promotion-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .promotion-card {
+    flex: 0 0 80%;   /* Main card = 80% */
+    width: 80%;
+    scroll-snap-align: start;
+  }
+
+  .promotion-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+  }
+
+  .promotion-btn {
+    display: none; /* hide arrows on mobile */
+  }
+}
 </style>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-  const container = document.querySelector(".promotion-scroll");
-  const prevBtn = document.querySelector(".promotion-btn.prev");
-  const nextBtn = document.querySelector(".promotion-btn.next");
+    const container = document.querySelector(".promotion-scroll");
+    const prevBtn = document.querySelector(".promotion-btn.prev");
+    const nextBtn = document.querySelector(".promotion-btn.next");
 
-  const CARD_WIDTH = 276; // card width + gap
-  let autoScrollInterval;
-  let isPaused = false;
+    if (!container) return;
 
-  function startAutoScroll() {
-    stopAutoScroll();
-    autoScrollInterval = setInterval(() => {
-      if (!isPaused) {
-        container.scrollLeft += CARD_WIDTH;
+    let autoScrollInterval;
+    let isPaused = false;
 
-        if (container.scrollLeft + container.clientWidth >= container.scrollWidth) {
-          container.scrollLeft = 0;
+    function getScrollAmount() {
+        const card = container.querySelector(".promotion-card");
+
+        if (!card) return 300;
+
+        const gap = parseInt(
+            window.getComputedStyle(container).gap || 16
+        );
+
+        return card.offsetWidth + gap;
+    }
+
+    function scrollNext() {
+        const scrollAmount = getScrollAmount();
+
+        if (
+            container.scrollLeft + container.clientWidth >=
+            container.scrollWidth - 10
+        ) {
+            container.scrollTo({
+                left: 0,
+                behavior: "smooth"
+            });
+        } else {
+            container.scrollBy({
+                left: scrollAmount,
+                behavior: "smooth"
+            });
         }
-      }
-    }, 3000);
-  }
+    }
 
-  function stopAutoScroll() {
-    clearInterval(autoScrollInterval);
-  }
+    function scrollPrev() {
+        const scrollAmount = getScrollAmount();
 
-  startAutoScroll();
+        container.scrollBy({
+            left: -scrollAmount,
+            behavior: "smooth"
+        });
+    }
 
-  function pauseAndResume() {
-    isPaused = true;
-    setTimeout(() => isPaused = false, 3000);
-  }
+    function startAutoScroll() {
+        stopAutoScroll();
 
-  nextBtn.addEventListener("click", () => {
-    container.scrollBy({ left: CARD_WIDTH, behavior: "smooth" });
-    pauseAndResume();
-  });
+        autoScrollInterval = setInterval(() => {
+            if (!isPaused) {
+                scrollNext();
+            }
+        }, 3000);
+    }
 
-  prevBtn.addEventListener("click", () => {
-    container.scrollBy({ left: -CARD_WIDTH, behavior: "smooth" });
-    pauseAndResume();
-  });
+    function stopAutoScroll() {
+        if (autoScrollInterval) {
+            clearInterval(autoScrollInterval);
+        }
+    }
+
+    function pauseAndResume() {
+        isPaused = true;
+
+        setTimeout(() => {
+            isPaused = false;
+        }, 3000);
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+            scrollNext();
+            pauseAndResume();
+        });
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+            scrollPrev();
+            pauseAndResume();
+        });
+    }
+
+    startAutoScroll();
+
+    window.addEventListener("resize", () => {
+        stopAutoScroll();
+        startAutoScroll();
+    });
 
 });
 </script>
